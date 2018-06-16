@@ -9,13 +9,21 @@ namespace commons {
     enum MENU_OPTIONS {
         CREATE_POLYGON,
         SELECT_POLYGON,
-        TRANSLATE,
-        ROTATE,
+        TRANSLATE_POLYGON,
+        ROTATE_POLYGON,
         AREA_MEASURE,
         SET_ORIENTATION,
         DELETE,
         CLEAR,
         QUIT
+    };
+
+    enum APPLICATION_STATUS {
+        NONE,
+        CREATE,
+        SELECT,
+        TRANSLATE,
+        ROTATE
     };
 }
 

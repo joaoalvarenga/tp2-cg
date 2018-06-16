@@ -6,7 +6,9 @@
 
 #include <Windows/MainWindow.hpp>
 
+
 MainWindow *MainWindow::instance = nullptr;
+Application *MainWindow::application = nullptr;
 
 void MainWindow::initGl(int argc, char **argv) {
     glutInit(&argc, argv);
@@ -16,12 +18,13 @@ void MainWindow::initGl(int argc, char **argv) {
 
     glutDisplayFunc(drawCallbackWrapper);
     glutMouseFunc(mouseCallbackWrapper);
+    glutMotionFunc(mouseMoveCallback);
 
     glutCreateMenu(menuCallbackWrapper);
     glutAddMenuEntry("Criar poligono", CREATE_POLYGON);
     glutAddMenuEntry("Selecionar poligono", SELECT_POLYGON);
-    glutAddMenuEntry("Transladar poligono", TRANSLATE);
-    glutAddMenuEntry("Rotacionar poligono", ROTATE);
+    glutAddMenuEntry("Transladar poligono", TRANSLATE_POLYGON);
+    glutAddMenuEntry("Rotacionar poligono", ROTATE_POLYGON);
     glutAddMenuEntry("Calcular area", AREA_MEASURE);
     glutAddMenuEntry("Definir orientacao", SET_ORIENTATION);
     glutAddMenuEntry("Eliminar", DELETE);
@@ -43,25 +46,29 @@ void MainWindow::setInstance() {
 void MainWindow::display(int argc, char **argv) {
     setInstance();
 
+    MainWindow::application = new MainApplication();
+
     initGl(argc, argv);     // Our own OpenGL initialization
     glutMainLoop();         // Enter the event-processing loop
 }
 
 void MainWindow::drawCallbackWrapper() {
+    MainWindow::application->draw();
+
     glutPostRedisplay();
 }
 
 void MainWindow::mouseCallbackWrapper(int button, int state, int x, int y) {
+    MainWindow::application->mouseCallback(button, state, x, y);
 }
 
 void MainWindow::menuCallbackWrapper(int option) {
-    MainWindow::instance->menuCallBack(option);
+    MainWindow::application->menuCallback(option);
 }
 
 void MainWindow::menuCallBack(int option) {
-    this->option = (MENU_OPTIONS) option;
-    switch(this->option) {
-        case QUIT:
-            exit(0);
-    }
+}
+
+void MainWindow::mouseMoveCallback(int x, int y) {
+    MainWindow::application->mouseMoveCallback(x, y);
 }
