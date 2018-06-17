@@ -7,10 +7,10 @@
 #include <GL/gl.h>
 #include <GL/glut.h>
 
-StatusBar::StatusBar() : color(200, 200, 200) {
+StatusBar::StatusBar(int width) : color(149, 165, 166) {
     x = 0;
     y = 0;
-    width = 800;
+    this->width = width;
     height = 30;
     text = "MODO VISUALIZACAO";
 }
@@ -65,4 +65,8 @@ void StatusBar::setStatus(APPLICATION_STATUS status) {
 
 int StatusBar::getMaxY() {
     return y + height;
+}
+
+void StatusBar::setWidth(int width) {
+    this->width = width;
 }

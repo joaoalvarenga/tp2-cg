@@ -22,6 +22,8 @@ public:
     virtual void mouseCallback(int, int, int, int) = 0;
     virtual void menuCallback(int) = 0;
     virtual void mouseMoveCallback(int, int) = 0;
+    virtual void reshapeCallback(int width, int height) = 0;
+    virtual void keyboardCallback(unsigned char, int, int) = 0;
 };
 
 #endif //TP2_CG_APPLICATION_HPP

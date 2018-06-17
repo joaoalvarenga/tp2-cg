@@ -8,32 +8,41 @@
 #include <cstdlib>
 #include <iostream>
 #include <Utils/Utils.hpp>
+#include <sstream>
+#include <iomanip>
 
-MainApplication::MainApplication() {
+MainApplication::MainApplication(int windowWidth, int windowHeight) {
+    this->windowWidth = windowWidth;
+    this->windowHeight = windowHeight;
     this->formingPolygon = nullptr;
     std::vector<Color> colors;
-    colors.push_back(Color(255,0,0));
+
+    /*colors.push_back(Color(255,0,0));
     colors.push_back(Color(0,255,0));
     colors.push_back(Color(0,0,255));
     colors.push_back(Color(255,255,0));
     colors.push_back(Color(255,0,255));
     colors.push_back(Color(0,255,255));
+    colors.push_back(Color(0,0,0));*/
     colors.push_back(Color(0,0,0));
-    this->colorPicker = new ColorPicker(colors, 30, 600);
-    this->statusBar = new StatusBar();
+    colors.push_back(Color(155, 89, 182));
+    colors.push_back(Color(52, 152, 219));
+    colors.push_back(Color(46, 204, 113));
+    colors.push_back(Color(39, 174, 96));
+    colors.push_back(Color(241, 196, 15));
+    colors.push_back(Color(230, 126, 34));
+    colors.push_back(Color(231, 76, 60));
+    this->colorPicker = new ColorPicker(colors, 30, windowHeight);
+    this->statusBar = new StatusBar(windowWidth);
     this->statusBar->setStatus(NONE);
-
-}
-
-void MainApplication::run() {
 }
 
 
 void MainApplication::draw() {
-    run();
 
     glClearColor(1, 1, 1, 1);
     glClear(GL_COLOR_BUFFER_BIT);
+    glEnable(GL_MULTISAMPLE );
 
     colorPicker->draw();
     if(formingPolygon != nullptr) {
@@ -41,10 +50,17 @@ void MainApplication::draw() {
     }
 
     for(auto polygon : polygons) {
-        glColor3f(polygon.getFillColor().getR()/255.0, polygon.getFillColor().getB()/255.0, polygon.getFillColor().getG()/255.0);
-        glBegin(GL_POLYGON);
+        glColor3f(polygon.getFillColor().getR()/255.0, polygon.getFillColor().getG()/255.0, polygon.getFillColor().getB()/255.0);
+        if (polygon.isFill()) {
+            glBegin(GL_POLYGON);
+        } else {
+            glBegin(GL_LINE_STRIP);
+        }
         for(auto vertex : polygon.getVertices()) {
             glVertex2i(vertex->first, vertex->second);
+        }
+        if (!polygon.isFill()) {
+            glVertex2i(polygon.getVertices()[0]->first, polygon.getVertices()[0]->second);
         }
         glEnd();
     }
@@ -137,7 +153,7 @@ void MainApplication::menuCallback(int option) {
                 this->statusBar->setText("Selecione um poligono primeiro");
             } else {
                 this->statusBar->setStatus(NONE);
-                this->statusBar->setText("Poligono de orientacao " + getPolygonOrientationText(*selectedPolygon));
+                this->statusBar->setText("Area do poligono e de " + getPolygonAreaText(*selectedPolygon));
             }
             break;
 
@@ -149,6 +165,24 @@ void MainApplication::menuCallback(int option) {
                 this->statusBar->setStatus(NONE);
                 this->statusBar->setText("Poligono de orientacao " + getPolygonOrientationText(*selectedPolygon));
             }
+            break;
+
+        case DELETE:
+            if(selectedPolygon == nullptr) {
+                this->statusBar->setStatus(NONE);
+                this->statusBar->setText("Selecione um poligono primeiro");
+            } else {
+                this->statusBar->setStatus(NONE);
+                this->polygons.erase(this->polygons.begin()+selectedIndex);
+                selectedIndex = 0;
+                selectedPolygon = nullptr;
+            }
+            break;
+
+        case CLEAR:
+            this->polygons.clear();
+            selectedPolygon = nullptr;
+            selectedIndex = -1;
             break;
 
         case QUIT:
@@ -168,6 +202,7 @@ void MainApplication::mouseCallback(int button, int state, int x, int y) {
                     for(int i = polygons.size() - 1; i >= 0; i--) {
                         if(polygons.at(i).isIntersecting(std::pair<int, int>(x, y))) {
                             selectedPolygon = &polygons.at(i);
+                            selectedIndex = i;
                             return;
                         }
                     }
@@ -192,24 +227,39 @@ void MainApplication::createNewPolygon() {
     }
     this->formingPolygon = new Polygon();
     this->statusBar->setStatus(CREATE);
+    if (formingPolygon->isFill())
+        this->statusBar->setText("MODO CRIACAO - COM PREENCHIMENTO");
+    else
+        this->statusBar->setText("MODO CRIACAO - SEM PREENCHIMENTO");
 }
 
 void MainApplication::addVertexToNewPolygon(int x, int y) {
     if (formingPolygon->getVertices().size() > 0) {
         std::pair<int, int> initialVertex = *formingPolygon->getVertices().at(0);
-        if(distance2d(initialVertex.first, initialVertex.second, x, y) < 5) {
+        if(distance2d(initialVertex.first, initialVertex.second, x, y) < 8) {
             polygons.push_back(*formingPolygon);
             this->statusBar->setStatus(NONE);
         }
+        else if (!formingPolygon->addVertex(x, y)) {
+            this->statusBar->setStatus(NONE);
+            this->statusBar->setText("Erro poligono nao convexo");
+        }
+
     }
-    formingPolygon->addVertex(x, y);
+    else {
+        if (!formingPolygon->addVertex(x, y)) {
+            this->statusBar->setStatus(NONE);
+            this->statusBar->setText("Erro poligono nao convexo");
+        }
+    }
+
     std::cout << "Adding vertex (" << x << "," << y << ")" << std::endl;
 
 }
 
 void MainApplication::mouseMoveCallback(int x, int y) {
     if (this->statusBar->getStatus() == TRANSLATE) {
-        selectedPolygon->translateTo(x,  y, std::pair<int, int>(colorPicker->getSize(), 800), std::pair<int, int>(statusBar->getMaxY(), 600));
+        selectedPolygon->translateTo(x,  y, std::pair<int, int>(colorPicker->getSize(), windowWidth), std::pair<int, int>(statusBar->getMaxY(), windowHeight));
     }
 }
 
@@ -218,6 +268,33 @@ std::string MainApplication::getPolygonOrientationText(Polygon pol) {
         return "HORARIO";
     }
     return "ANTI-HORARIO";
+
+}
+
+std::string MainApplication::getPolygonAreaText(Polygon pol) {
+    double area = fabs(pol.getArea());
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(2) << area;
+    return stream.str();
+}
+
+void MainApplication::reshapeCallback(int width, int height) {
+    windowWidth = width;
+    windowHeight = height;
+    this->statusBar->setWidth(width);
+
+}
+
+void MainApplication::keyboardCallback(unsigned char key, int x, int y) {
+    if (key == 'f' && this->statusBar->getStatus() == CREATE) {
+        if(formingPolygon != nullptr) {
+            formingPolygon->setFill(!formingPolygon->isFill());
+            if (formingPolygon->isFill())
+                this->statusBar->setText("MODO CRIACAO - COM PREENCHIMENTO");
+            else
+                this->statusBar->setText("MODO CRIACAO - SEM PREENCHIMENTO");
+        }
+    }
 
 }
 

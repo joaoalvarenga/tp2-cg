@@ -17,9 +17,9 @@ ColorPicker::ColorPicker(std::vector<Color> colors, int y, int height) : colors(
 
 bool ColorPicker::isColorPicker(int x, int y) {
     int width = (int) (this->height / (double) (this->colors.size() + 1));
-    if (x <= width && y >= this->y) {
-        std::cout << "here" << std::endl;
-        int picked = (int)((y/(float)height)*(this->colors.size()+1));
+    y -= this->y;
+    if (x <= width && y >= 0) {
+        int picked = (int)(((y)/(float)height)*(this->colors.size()+1));
         std::cout << picked << std::endl;
         if (picked < this->colors.size()) {
             this->pickedColor = picked;

@@ -42,6 +42,8 @@ protected:
     static void mouseCallbackWrapper(int button, int state, int x, int y);
     static void menuCallbackWrapper(int option);
     static void mouseMoveCallback(int x, int y);
+    static void reshapeCallback(int w, int h);
+    static void keyboardCallback(unsigned char, int, int);
 
     void menuCallBack(int option);
 

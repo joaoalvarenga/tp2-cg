@@ -14,12 +14,13 @@ using namespace commons;
 
 class StatusBar {
 public:
-    StatusBar();
+    StatusBar(int);
     void draw();
     void setText(std::string text);
     APPLICATION_STATUS getStatus();
     void setStatus(APPLICATION_STATUS status);
     int getMaxY();
+    void setWidth(int width);
 private:
     int x, y, width, height;
     Color color;

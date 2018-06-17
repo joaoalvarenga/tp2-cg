@@ -14,11 +14,13 @@ void MainWindow::initGl(int argc, char **argv) {
     glutInit(&argc, argv);
 
     glutInitWindowSize(800, 600);
-    glutCreateWindow("Menu");
+    glutCreateWindow("Paint");
 
     glutDisplayFunc(drawCallbackWrapper);
     glutMouseFunc(mouseCallbackWrapper);
     glutMotionFunc(mouseMoveCallback);
+    glutReshapeFunc(reshapeCallback);
+    glutKeyboardFunc(keyboardCallback);
 
     int rotateMenu = glutCreateMenu(menuCallbackWrapper);
     glutAddMenuEntry("+90", ROTATE_POLYGON_PLUS_90);
@@ -50,7 +52,7 @@ void MainWindow::setInstance() {
 void MainWindow::display(int argc, char **argv) {
     setInstance();
 
-    MainWindow::application = new MainApplication();
+    MainWindow::application = new MainApplication(800, 600);
 
     initGl(argc, argv);     // Our own OpenGL initialization
     glutMainLoop();         // Enter the event-processing loop
@@ -75,4 +77,17 @@ void MainWindow::menuCallBack(int option) {
 
 void MainWindow::mouseMoveCallback(int x, int y) {
     MainWindow::application->mouseMoveCallback(x, y);
+}
+
+void MainWindow::reshapeCallback(int w, int h) {
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0.0f, w, h, 0.0f, 0.0f, 1.0f);
+
+    MainWindow::application->reshapeCallback(w, h);
+}
+
+void MainWindow::keyboardCallback(unsigned char key, int x, int y) {
+    MainWindow::application->keyboardCallback(key, x, y);
 }

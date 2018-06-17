@@ -16,15 +16,17 @@ using namespace commons;
 
 class MainApplication : public Application {
 public:
-    MainApplication();
+    MainApplication(int, int);
 
-    void run();
     void draw() override;
     void mouseCallback(int button, int state, int x, int y) override ;
     void menuCallback(int option) override ;
     void mouseMoveCallback(int x, int y);
+    void reshapeCallback(int width, int height);
+    void keyboardCallback(unsigned char key, int x, int y);
 
     std::string getPolygonOrientationText(Polygon pol);
+    std::string getPolygonAreaText(Polygon pol);
 
     void createNewPolygon();
     void addVertexToNewPolygon(int x, int y);
@@ -37,6 +39,9 @@ private:
     ColorPicker* colorPicker;
     StatusBar* statusBar;
     int rotateAngle;
+    int selectedIndex;
+
+    int windowWidth, windowHeight;
 
     std::pair<int, int> startPosition;
 };

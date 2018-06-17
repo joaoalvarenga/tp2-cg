@@ -29,10 +29,18 @@ public:
     void rotateTo(int angle, int x, int y);
     ORIENTATION getOrientation();
     double getArea();
+    bool isConvex();
 
 private:
     std::vector<std::pair<int, int>*> vertices;
     Color fillColor;
+    bool fill;
+public:
+    bool isFill() const;
+
+    void setFill(bool fill);
+
+private:
 
     std::pair<int, int> min;
     std::pair<int, int> max;

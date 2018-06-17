@@ -9,6 +9,11 @@
 #include <iostream>
 #include <math.h>
 
+double zCrossProduct(std::pair<int, int> a, std::pair<int, int> b, std::pair<int, int> c) {
+    return (a.first - b.first) * (b.second - c.second) - (a.second - b.second) * (b.first - c.first);
+}
+
+
 Polygon::Polygon() : Polygon(0,0,0) {
 }
 
@@ -17,6 +22,7 @@ Polygon::Polygon(int r, int g, int b) : fillColor(r,g,b) {
     min.second = -1;
     max.first = -1;
     max.second = -1;
+    fill = true;
 }
 
 bool Polygon::addVertex(int x, int y) {
@@ -34,9 +40,9 @@ bool Polygon::addVertex(int x, int y) {
         max.second = y;
     }
 
-
     this->vertices.push_back(new std::pair<int, int>(x, y));
-    return true;
+
+    return isConvex();
 }
 
 std::vector<std::pair<int, int>*> Polygon::getVertices() {
@@ -176,4 +182,29 @@ double Polygon::getArea() {
         area += (vertices[j]->first - vertices[i]->first) * (vertices[j]->first + vertices[i]->second);
     }
     return area/2.0;
+}
+
+bool Polygon::isFill() const {
+    return fill;
+}
+
+void Polygon::setFill(bool fill) {
+    Polygon::fill = fill;
+}
+
+bool Polygon::isConvex() {
+    if (vertices.size() < 4)
+        return true;
+
+    int i = 0;
+    bool old_flag = zCrossProduct(*vertices[i], *vertices[i+1], *vertices[i+2]) > 0;
+    bool new_flag;
+    for(i = 1; i < vertices.size()-2; i++) {
+        new_flag = zCrossProduct(*vertices[i], *vertices[i+1], *vertices[i+2]) > 0;
+        if (new_flag != old_flag) {
+            return false;
+        }
+        old_flag = new_flag;
+    }
+    return true;
 }

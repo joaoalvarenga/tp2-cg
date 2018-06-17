@@ -14,4 +14,5 @@ float distance2d(int x0, int y0, int x1, int y1) {
 }
 
 
+
 #endif //TP2_CG_UTILS_HPP
