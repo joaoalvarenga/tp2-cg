@@ -12,7 +12,7 @@
 class ColorPicker {
 public:
     ColorPicker() = default;
-    ColorPicker(std::vector<Color> colors, int height);
+    ColorPicker(std::vector<Color> colors, int y, int height);
 
     void draw();
 
@@ -22,6 +22,7 @@ public:
 
 private:
     std::vector<Color> colors;
+    int y;
     int height;
     int pickedColor;
 };

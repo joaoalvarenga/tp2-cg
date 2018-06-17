@@ -9,8 +9,10 @@
 
 #include <vector>
 #include <tuple>
+#include <Utils/Commons.hpp>
 #include "Color.hpp"
 
+using namespace commons;
 
 class Polygon {
 public:
@@ -23,8 +25,10 @@ public:
     Color getFillColor();
     void setFillColor(Color color);
     bool isIntersecting(std::pair<int, int>);
-    bool isOutlimits(int xmin, int ymin, int xmax, int ymax);
     void translateTo(int x, int y, std::pair<int, int> limitX, std::pair<int, int> limitY);
+    void rotateTo(int angle, int x, int y);
+    ORIENTATION getOrientation();
+    double getArea();
 
 private:
     std::vector<std::pair<int, int>*> vertices;
@@ -32,6 +36,8 @@ private:
 
     std::pair<int, int> min;
     std::pair<int, int> max;
+
+    ORIENTATION orientation;
 
 };
 

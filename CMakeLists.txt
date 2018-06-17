@@ -9,5 +9,7 @@ find_package(GLUT REQUIRED)
 include_directories(includes/)
 include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
 
-add_executable(tp2 src/main.cpp includes/Interfaces/Window.hpp includes/Windows/MainWindow.hpp src/Windows/MainWindow.cpp includes/Utils/Commons.hpp includes/Domain/Polygon.hpp src/Domain/Polygon.cpp includes/Applications/MainApplication.hpp includes/Interfaces/Application.hpp src/Applications/MainApplication.cpp includes/Utils/Utils.hpp includes/Domain/ColorPicker.hpp includes/Domain/Color.hpp src/Domain/Color.cpp src/Domain/ColorPicker.cpp)
+add_executable(tp2 src/main.cpp includes/Interfaces/Window.hpp includes/Windows/MainWindow.hpp src/Windows/MainWindow.cpp includes/Utils/Commons.hpp includes/Domain/Polygon.hpp src/Domain/Polygon.cpp includes/Applications/MainApplication.hpp includes/Interfaces/Application.hpp src/Applications/MainApplication.cpp includes/Utils/Utils.hpp includes/Domain/ColorPicker.hpp includes/Domain/Color.hpp src/Domain/Color.cpp src/Domain/ColorPicker.cpp includes/Domain/StatusBar.hpp src/Domain/StatusBar.cpp)
 target_link_libraries(tp2 ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
+
+add_executable(tp2_tests includes/Utils/Commons.hpp includes/Domain/Polygon.hpp src/Domain/Polygon.cpp includes/Utils/Utils.hpp includes/Domain/ColorPicker.hpp includes/Domain/Color.hpp src/Domain/Color.cpp tests/main.cpp)

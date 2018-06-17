@@ -10,7 +10,6 @@
 #include <Utils/Utils.hpp>
 
 MainApplication::MainApplication() {
-    this->status = NONE;
     this->formingPolygon = nullptr;
     std::vector<Color> colors;
     colors.push_back(Color(255,0,0));
@@ -20,7 +19,9 @@ MainApplication::MainApplication() {
     colors.push_back(Color(255,0,255));
     colors.push_back(Color(0,255,255));
     colors.push_back(Color(0,0,0));
-    this->colorPicker = new ColorPicker(colors, 600);
+    this->colorPicker = new ColorPicker(colors, 30, 600);
+    this->statusBar = new StatusBar();
+    this->statusBar->setStatus(NONE);
 
 }
 
@@ -49,7 +50,7 @@ void MainApplication::draw() {
     }
 
 
-    if (this->status == CREATE) {
+    if (this->statusBar->getStatus() == CREATE) {
         glColor3f(formingPolygon->getFillColor().getR()/255.0, formingPolygon->getFillColor().getG()/255.0, formingPolygon->getFillColor().getB()/255.0);
         glBegin(GL_LINE_STRIP);
         for(auto vertex : formingPolygon->getVertices()) {
@@ -65,7 +66,7 @@ void MainApplication::draw() {
         }
         glEnd();
     }
-    else if(this->status == SELECT || this->status == TRANSLATE) {
+    else if(this->statusBar->getStatus() == SELECT || this->statusBar->getStatus() == TRANSLATE || this->statusBar->getStatus() == ROTATE) {
         if (selectedPolygon != nullptr) {
             glColor3f(0,0,0);
             glBegin(GL_LINE_STRIP);
@@ -86,6 +87,7 @@ void MainApplication::draw() {
         }
     }
 
+    statusBar->draw();
 
     glFlush();
 
@@ -94,18 +96,58 @@ void MainApplication::draw() {
 void MainApplication::menuCallback(int option) {
     switch(option) {
         case CREATE_POLYGON:
-            std::cout << "Creating polygon" << std::endl;
+            selectedPolygon = nullptr;
             createNewPolygon();
             break;
         case SELECT_POLYGON:
             selectedPolygon = nullptr;
-            this->status = SELECT;
+            this->statusBar->setStatus(SELECT);
             break;
         case TRANSLATE_POLYGON:
             if (selectedPolygon == nullptr) {
-                this->status = NONE;
+                this->statusBar->setStatus(NONE);
+                this->statusBar->setText("Selecione um poligono primeiro");
             } else {
-                this->status = TRANSLATE;
+                this->statusBar->setStatus(TRANSLATE);
+            }
+            break;
+        case ROTATE_POLYGON_PLUS_90:
+            if (selectedPolygon == nullptr) {
+                this->statusBar->setStatus(NONE);
+                this->statusBar->setText("Selecione um poligono primeiro");
+            }
+            else {
+                rotateAngle = 90;
+                this->statusBar->setStatus(ROTATE);
+            }
+            break;
+        case ROTATE_POLYGON_MINUS_90:
+            if (selectedPolygon == nullptr) {
+                this->statusBar->setStatus(NONE);
+                this->statusBar->setText("Selecione um poligono primeiro");
+            }
+            else {
+                rotateAngle = -90;
+                this->statusBar->setStatus(ROTATE);
+            }
+            break;
+        case GET_AREA_MEASUREMENT:
+            if (selectedPolygon == nullptr) {
+                this->statusBar->setStatus(NONE);
+                this->statusBar->setText("Selecione um poligono primeiro");
+            } else {
+                this->statusBar->setStatus(NONE);
+                this->statusBar->setText("Poligono de orientacao " + getPolygonOrientationText(*selectedPolygon));
+            }
+            break;
+
+        case GET_ORIENTATION:
+            if (selectedPolygon == nullptr) {
+                this->statusBar->setStatus(NONE);
+                this->statusBar->setText("Selecione um poligono primeiro");
+            } else {
+                this->statusBar->setStatus(NONE);
+                this->statusBar->setText("Poligono de orientacao " + getPolygonOrientationText(*selectedPolygon));
             }
             break;
 
@@ -118,10 +160,11 @@ void MainApplication::mouseCallback(int button, int state, int x, int y) {
     if (button == GLUT_LEFT_BUTTON) {
         if (state == GLUT_DOWN) {
             if (!this->colorPicker->isColorPicker(x, y)) {
-                if (this->status == CREATE) {
+                APPLICATION_STATUS status = this->statusBar->getStatus();
+                if (status == CREATE) {
                     addVertexToNewPolygon(x, y);
                 }
-                else if(this->status == SELECT) {
+                else if(status == SELECT) {
                     for(int i = polygons.size() - 1; i >= 0; i--) {
                         if(polygons.at(i).isIntersecting(std::pair<int, int>(x, y))) {
                             selectedPolygon = &polygons.at(i);
@@ -129,10 +172,14 @@ void MainApplication::mouseCallback(int button, int state, int x, int y) {
                         }
                     }
                 }
-                else if(this->status == TRANSLATE) {
+                else if(status == TRANSLATE) {
                     std::pair<int,int> center = selectedPolygon->getCenter();
                     startPosition.first = center.first;
                     startPosition.second = center.second;
+                }
+                else if(status == ROTATE) {
+                    selectedPolygon->rotateTo(rotateAngle, x, y);
+                    this->statusBar->setStatus(NONE);
                 }
             }
         }
@@ -144,7 +191,7 @@ void MainApplication::createNewPolygon() {
         delete this->formingPolygon;
     }
     this->formingPolygon = new Polygon();
-    this->status = CREATE;
+    this->statusBar->setStatus(CREATE);
 }
 
 void MainApplication::addVertexToNewPolygon(int x, int y) {
@@ -152,7 +199,7 @@ void MainApplication::addVertexToNewPolygon(int x, int y) {
         std::pair<int, int> initialVertex = *formingPolygon->getVertices().at(0);
         if(distance2d(initialVertex.first, initialVertex.second, x, y) < 5) {
             polygons.push_back(*formingPolygon);
-            this->status = NONE;
+            this->statusBar->setStatus(NONE);
         }
     }
     formingPolygon->addVertex(x, y);
@@ -161,7 +208,16 @@ void MainApplication::addVertexToNewPolygon(int x, int y) {
 }
 
 void MainApplication::mouseMoveCallback(int x, int y) {
-    if (this->status == TRANSLATE) {
-        selectedPolygon->translateTo(x,  y, std::pair<int, int>(colorPicker->getSize(), 800), std::pair<int, int>(0, 600));
+    if (this->statusBar->getStatus() == TRANSLATE) {
+        selectedPolygon->translateTo(x,  y, std::pair<int, int>(colorPicker->getSize(), 800), std::pair<int, int>(statusBar->getMaxY(), 600));
     }
 }
+
+std::string MainApplication::getPolygonOrientationText(Polygon pol) {
+    if(pol.getOrientation() == CLOCKWISE) {
+        return "HORARIO";
+    }
+    return "ANTI-HORARIO";
+
+}
+

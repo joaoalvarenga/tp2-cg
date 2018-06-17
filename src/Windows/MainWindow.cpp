@@ -20,13 +20,17 @@ void MainWindow::initGl(int argc, char **argv) {
     glutMouseFunc(mouseCallbackWrapper);
     glutMotionFunc(mouseMoveCallback);
 
+    int rotateMenu = glutCreateMenu(menuCallbackWrapper);
+    glutAddMenuEntry("+90", ROTATE_POLYGON_PLUS_90);
+    glutAddMenuEntry("-90", ROTATE_POLYGON_MINUS_90);
+
     glutCreateMenu(menuCallbackWrapper);
     glutAddMenuEntry("Criar poligono", CREATE_POLYGON);
     glutAddMenuEntry("Selecionar poligono", SELECT_POLYGON);
     glutAddMenuEntry("Transladar poligono", TRANSLATE_POLYGON);
-    glutAddMenuEntry("Rotacionar poligono", ROTATE_POLYGON);
-    glutAddMenuEntry("Calcular area", AREA_MEASURE);
-    glutAddMenuEntry("Definir orientacao", SET_ORIENTATION);
+    glutAddSubMenu("Rotacionar poligono", rotateMenu);
+    glutAddMenuEntry("Calcular area", GET_AREA_MEASUREMENT);
+    glutAddMenuEntry("Definir orientacao", GET_ORIENTATION);
     glutAddMenuEntry("Eliminar", DELETE);
     glutAddMenuEntry("Limpar", CLEAR);
     glutAddMenuEntry("Sair", QUIT);

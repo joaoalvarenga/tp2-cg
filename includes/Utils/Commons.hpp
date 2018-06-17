@@ -10,9 +10,10 @@ namespace commons {
         CREATE_POLYGON,
         SELECT_POLYGON,
         TRANSLATE_POLYGON,
-        ROTATE_POLYGON,
-        AREA_MEASURE,
-        SET_ORIENTATION,
+        ROTATE_POLYGON_PLUS_90,
+        ROTATE_POLYGON_MINUS_90,
+        GET_AREA_MEASUREMENT,
+        GET_ORIENTATION,
         DELETE,
         CLEAR,
         QUIT
@@ -24,6 +25,11 @@ namespace commons {
         SELECT,
         TRANSLATE,
         ROTATE
+    };
+
+    enum ORIENTATION {
+        CLOCKWISE,
+        COUNTERCLOCKWISE
     };
 }
 
